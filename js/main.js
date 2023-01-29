@@ -1,118 +1,147 @@
-const wrapper = document.querySelector(".wrapper");
+let activeUrl = "character";
+let activePage = 1;
+let numberOfPages = 0;
 
-fetch("https://rickandmortyapi.com/api/character")
-    .then((res) => res.json())
-    .then((data) => renderCharacter(data.results));
+requestApi(`https://rickandmortyapi.com/api/${activeUrl}`);
 
-function renderCharacter(characters) {
-    const table = document.createElement("table");
-
-    for (const { name, status, species, gender, image } of characters) {
-        const row = table.insertRow();
-
-        row.insertCell().append(name);
-        row.insertCell().append(status);
-        row.insertCell().append(species);
-        row.insertCell().append(gender);
-        row.insertCell().appendChild(new Image(70)).src = image;
-    }
-
-    // characters.forEach((character) => {
-    //     const { name, status, species, gender, image } = character;
-
-    //     const tr = document.createElement("tr");
-    //     const tdName = document.createElement("td");
-    //     const tdStatus = document.createElement("td");
-    //     const tdSpecies = document.createElement("td");
-    //     const tdGender = document.createElement("td");
-    //     const tdImage = document.createElement("td");
-    //     const characterImage = document.createElement("img");
-
-    //     tdName.append(name);
-    //     tdStatus.append(status);
-    //     tdSpecies.append(species);
-    //     tdGender.append(gender);
-    //     characterImage.setAttribute("src", image);
-    //     characterImage.style = "width: 70px";
-    //     tdImage.append(characterImage);
-
-    //     table
-    //         .appendChild(tr)
-    //         .append(tdName, tdStatus, tdSpecies, tdGender, tdImage);
-    // });
-
-    wrapper.append(table);
+function requestApi(categoryData) {
+    fetch(categoryData).then((res) =>
+        res.json().then((data) => showDataRequestApi(data))
+    );
 }
 
-let x = {
-    id: 1,
-    name: "Rick Sanchez",
-    status: "Alive",
-    species: "Human",
-    type: "",
-    gender: "Male",
-    origin: {
-        name: "Earth (C-137)",
-        url: "https://rickandmortyapi.com/api/location/1",
-    },
-    location: {
-        name: "Citadel of Ricks",
-        url: "https://rickandmortyapi.com/api/location/3",
-    },
-    image: "https://rickandmortyapi.com/api/character/avatar/1.jpeg",
-    episode: [
-        "https://rickandmortyapi.com/api/episode/1",
-        "https://rickandmortyapi.com/api/episode/2",
-        "https://rickandmortyapi.com/api/episode/3",
-        "https://rickandmortyapi.com/api/episode/4",
-        "https://rickandmortyapi.com/api/episode/5",
-        "https://rickandmortyapi.com/api/episode/6",
-        "https://rickandmortyapi.com/api/episode/7",
-        "https://rickandmortyapi.com/api/episode/8",
-        "https://rickandmortyapi.com/api/episode/9",
-        "https://rickandmortyapi.com/api/episode/10",
-        "https://rickandmortyapi.com/api/episode/11",
-        "https://rickandmortyapi.com/api/episode/12",
-        "https://rickandmortyapi.com/api/episode/13",
-        "https://rickandmortyapi.com/api/episode/14",
-        "https://rickandmortyapi.com/api/episode/15",
-        "https://rickandmortyapi.com/api/episode/16",
-        "https://rickandmortyapi.com/api/episode/17",
-        "https://rickandmortyapi.com/api/episode/18",
-        "https://rickandmortyapi.com/api/episode/19",
-        "https://rickandmortyapi.com/api/episode/20",
-        "https://rickandmortyapi.com/api/episode/21",
-        "https://rickandmortyapi.com/api/episode/22",
-        "https://rickandmortyapi.com/api/episode/23",
-        "https://rickandmortyapi.com/api/episode/24",
-        "https://rickandmortyapi.com/api/episode/25",
-        "https://rickandmortyapi.com/api/episode/26",
-        "https://rickandmortyapi.com/api/episode/27",
-        "https://rickandmortyapi.com/api/episode/28",
-        "https://rickandmortyapi.com/api/episode/29",
-        "https://rickandmortyapi.com/api/episode/30",
-        "https://rickandmortyapi.com/api/episode/31",
-        "https://rickandmortyapi.com/api/episode/32",
-        "https://rickandmortyapi.com/api/episode/33",
-        "https://rickandmortyapi.com/api/episode/34",
-        "https://rickandmortyapi.com/api/episode/35",
-        "https://rickandmortyapi.com/api/episode/36",
-        "https://rickandmortyapi.com/api/episode/37",
-        "https://rickandmortyapi.com/api/episode/38",
-        "https://rickandmortyapi.com/api/episode/39",
-        "https://rickandmortyapi.com/api/episode/40",
-        "https://rickandmortyapi.com/api/episode/41",
-        "https://rickandmortyapi.com/api/episode/42",
-        "https://rickandmortyapi.com/api/episode/43",
-        "https://rickandmortyapi.com/api/episode/44",
-        "https://rickandmortyapi.com/api/episode/45",
-        "https://rickandmortyapi.com/api/episode/46",
-        "https://rickandmortyapi.com/api/episode/47",
-        "https://rickandmortyapi.com/api/episode/48",
-        "https://rickandmortyapi.com/api/episode/49",
-        "https://rickandmortyapi.com/api/episode/50",
-        "https://rickandmortyapi.com/api/episode/51",
-    ],
-    url: "https://rickandmortyapi.com/api/character/1",
-    created: "2017-11-04T18:48:46.250Z",
-};
+function showDataRequestApi(dataRequest) {
+    const contentBlock = document.querySelector(".content_block");
+
+    numberOfPages = dataRequest.info.pages;
+
+    addPagination(dataRequest.info);
+
+    contentBlock.innerHTML = "";
+
+    if (activeUrl === "character") {
+        dataRequest.results.forEach((item) => {
+            const { id, name, image } = item;
+
+            contentBlock.innerHTML += `
+                <div class="character_item" id="${id}">
+                    <img src="${image}" alt="${name}" />
+                    <h2 class="character_name">${name}</h2>
+                </div>
+            `;
+        });
+    } else if (activeUrl === "location") {
+        const locationList = document.createElement("ul");
+        locationList.classList.add("location_list");
+
+        dataRequest.results.forEach((item) => {
+            const { id, name } = item;
+
+            const location = document.createElement("li");
+            location.textContent = name;
+            location.id = id;
+            locationList.append(location);
+        });
+
+        contentBlock.append(locationList);
+    }
+}
+
+// todo __________________pagination____________________
+
+const btnPrev = document.querySelector("#prev");
+const btnNext = document.querySelector("#next");
+
+btnPrev.addEventListener("click", (e) => defineTheActivePage(e));
+btnNext.addEventListener("click", (e) => defineTheActivePage(e));
+
+function defineTheActivePage(button) {
+    button = button.target.textContent;
+
+    if (button != "...") {
+        if (button === "next" && activePage < numberOfPages) {
+            activePage++;
+        } else if (button === "prev" && activePage > 1) {
+            activePage--;
+        } else if (+button) {
+            activePage = +button;
+        }
+
+        requestApi(
+            `https://rickandmortyapi.com/api/${activeUrl}?page=${activePage}`
+        );
+    }
+}
+
+function returnsTheActivePage(numberPage) {
+    numberPage = +numberPage.target.textContent;
+
+    if (numberPage) {
+        activePage = numberPage;
+        requestApi(
+            `https://rickandmortyapi.com/api/${activeUrl}?page=${activePage}`
+        );
+    }
+}
+
+function addPagination({ pages }) {
+    const paginarionBlock = document.querySelector(".pagination_block");
+    paginarionBlock.addEventListener("click", (e) => returnsTheActivePage(e));
+
+    let paginationBlockContent = "";
+
+    if (activePage > pages - 3) {
+        paginationBlockContent += `
+            <li>1</li>
+            <li>...</li>
+            `;
+    }
+
+    for (let i = 1; i <= pages; i++) {
+        if (activePage <= pages - 4 && i === pages - 1) {
+            paginationBlockContent += `<li class="dots">...</li>`;
+        }
+
+        if ((i <= 6 && activePage < 5) || i === pages) {
+            if (activePage !== i) {
+                paginationBlockContent += `<li>${i}</li>`;
+            } else {
+                paginationBlockContent += `<li class="active_number_page">${i}</li>`;
+            }
+        } else if (activePage === i && activePage < pages - 2) {
+            paginationBlockContent += `
+            <li>1</li>
+            <li class="dots">...</li>
+            <li>${activePage - 2}</li>
+            <li>${activePage - 1}</li>
+            <li class="active_number_page">${activePage}</li>
+            <li>${activePage + 1}</li>
+            <li>${activePage + 2}</li>
+            `;
+        } else if (activePage > pages - 3 && i > pages - 6) {
+            if (i === activePage) {
+                paginationBlockContent += `<li class="active_number_page">${i}</li>`;
+            } else {
+                paginationBlockContent += `<li>${i}</li>`;
+            }
+        }
+    }
+
+    paginarionBlock.innerHTML = paginationBlockContent;
+}
+
+// todo! ___________pagination the end_____________
+
+// todo ____________ menu _________________
+
+const headerMenu = document.querySelector(".header_menu");
+headerMenu.addEventListener("click", (e) => changeActiveUrl(e));
+
+function changeActiveUrl(url) {
+    url = url.target.textContent.slice(0, -1);
+    activeUrl = url;
+
+    requestApi(`https://rickandmortyapi.com/api/${activeUrl}`);
+}
+
+// todo! ____________ menu the end _________________
